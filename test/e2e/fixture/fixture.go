@@ -15,6 +15,7 @@ import (
 
 	"github.com/argoproj/pkg/errors"
 	jsonpatch "github.com/evanphx/json-patch"
+	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +23,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"sigs.k8s.io/yaml"
 
 	"github.com/argoproj/argo-cd/v2/common"
 	"github.com/argoproj/argo-cd/v2/pkg/apiclient"
@@ -757,26 +757,6 @@ func AddSignedFile(path, contents string) {
 	os.Setenv("GNUPGHOME", prevGnuPGHome)
 	if IsRemote() {
 		FailOnErr(Run(repoDirectory(), "git", "push", "-f", "origin", "master"))
-	}
-}
-
-func AddSignedTag(name string) {
-	prevGnuPGHome := os.Getenv("GNUPGHOME")
-	os.Setenv("GNUPGHOME", TmpDir+"/gpg")
-	defer os.Setenv("GNUPGHOME", prevGnuPGHome)
-	FailOnErr(Run(repoDirectory(), "git", "-c", fmt.Sprintf("user.signingkey=%s", GpgGoodKeyID), "tag", "-sm", "add signed tag", name))
-	if IsRemote() {
-		FailOnErr(Run(repoDirectory(), "git", "push", "--tags", "-f", "origin", "master"))
-	}
-}
-
-func AddTag(name string) {
-	prevGnuPGHome := os.Getenv("GNUPGHOME")
-	os.Setenv("GNUPGHOME", TmpDir+"/gpg")
-	defer os.Setenv("GNUPGHOME", prevGnuPGHome)
-	FailOnErr(Run(repoDirectory(), "git", "tag", name))
-	if IsRemote() {
-		FailOnErr(Run(repoDirectory(), "git", "push", "--tags", "-f", "origin", "master"))
 	}
 }
 
