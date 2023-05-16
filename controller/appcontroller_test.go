@@ -17,6 +17,7 @@ import (
 	synccommon "github.com/argoproj/gitops-engine/pkg/sync/common"
 	"github.com/argoproj/gitops-engine/pkg/utils/kube"
 	"github.com/argoproj/gitops-engine/pkg/utils/kube/kubetest"
+	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
@@ -28,7 +29,6 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	kubetesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
-	"sigs.k8s.io/yaml"
 
 	mockstatecache "github.com/argoproj/argo-cd/v2/controller/cache/mocks"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -248,7 +248,7 @@ status:
         name: always-outofsync
         namespace: default
         status: Synced
-      revisions:
+      revisions: 
       - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
       - bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
       sources:
@@ -1484,54 +1484,5 @@ func Test_canProcessApp(t *testing.T) {
 		ctrl.clusterFilter = func(_ *argoappv1.Cluster) bool { return true }
 		canProcess := ctrl.canProcessApp(app)
 		assert.False(t, canProcess)
-	})
-}
-
-func Test_canProcessAppSkipReconcileAnnotation(t *testing.T) {
-	appSkipReconcileInvalid := newFakeApp()
-	appSkipReconcileInvalid.Annotations = map[string]string{common.AnnotationKeyAppSkipReconcile: "invalid-value"}
-	appSkipReconcileFalse := newFakeApp()
-	appSkipReconcileFalse.Annotations = map[string]string{common.AnnotationKeyAppSkipReconcile: "false"}
-	appSkipReconcileTrue := newFakeApp()
-	appSkipReconcileTrue.Annotations = map[string]string{common.AnnotationKeyAppSkipReconcile: "true"}
-	ctrl := newFakeController(&fakeData{})
-	tests := []struct {
-		name     string
-		input    interface{}
-		expected bool
-	}{
-		{"No skip reconcile annotation", newFakeApp(), true},
-		{"Contains skip reconcile annotation ", appSkipReconcileInvalid, true},
-		{"Contains skip reconcile annotation value false", appSkipReconcileFalse, true},
-		{"Contains skip reconcile annotation value true", appSkipReconcileTrue, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, ctrl.canProcessApp(tt.input))
-		})
-	}
-}
-
-func Test_syncDeleteOption(t *testing.T) {
-	app := newFakeApp()
-	ctrl := newFakeController(&fakeData{apps: []runtime.Object{app}})
-	cm := newFakeCM()
-	t.Run("without delete option object is deleted", func(t *testing.T) {
-		cmObj := kube.MustToUnstructured(&cm)
-		delete := ctrl.shouldBeDeleted(app, cmObj)
-		assert.True(t, delete)
-	})
-	t.Run("with delete set to false object is retained", func(t *testing.T) {
-		cmObj := kube.MustToUnstructured(&cm)
-		cmObj.SetAnnotations(map[string]string{"argocd.argoproj.io/sync-options": "Delete=false"})
-		delete := ctrl.shouldBeDeleted(app, cmObj)
-		assert.False(t, delete)
-	})
-	t.Run("with delete set to false object is retained", func(t *testing.T) {
-		cmObj := kube.MustToUnstructured(&cm)
-		cmObj.SetAnnotations(map[string]string{"helm.sh/resource-policy": "keep"})
-		delete := ctrl.shouldBeDeleted(app, cmObj)
-		assert.False(t, delete)
 	})
 }

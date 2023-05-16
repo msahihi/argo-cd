@@ -3,7 +3,7 @@ package dex
 import (
 	"fmt"
 
-	"sigs.k8s.io/yaml"
+	"github.com/ghodss/yaml"
 
 	"github.com/argoproj/argo-cd/v2/common"
 	"github.com/argoproj/argo-cd/v2/util/settings"
