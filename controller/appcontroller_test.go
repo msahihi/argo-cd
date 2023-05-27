@@ -17,6 +17,7 @@ import (
 	synccommon "github.com/argoproj/gitops-engine/pkg/sync/common"
 	"github.com/argoproj/gitops-engine/pkg/utils/kube"
 	"github.com/argoproj/gitops-engine/pkg/utils/kube/kubetest"
+	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
@@ -28,7 +29,6 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	kubetesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
-	"sigs.k8s.io/yaml"
 
 	mockstatecache "github.com/argoproj/argo-cd/v2/controller/cache/mocks"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -248,7 +248,7 @@ status:
         name: always-outofsync
         namespace: default
         status: Synced
-      revisions:
+      revisions: 
       - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
       - bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
       sources:
@@ -1038,55 +1038,6 @@ func TestNeedRefreshAppStatus(t *testing.T) {
 			})
 		})
 	}
-}
-
-func TestUpdatedManagedNamespaceMetadata(t *testing.T) {
-	ctrl := newFakeController(&fakeData{apps: []runtime.Object{}})
-	app := newFakeApp()
-	app.Spec.SyncPolicy.ManagedNamespaceMetadata = &argoappv1.ManagedNamespaceMetadata{
-		Labels: map[string]string{
-			"foo": "bar",
-		},
-		Annotations: map[string]string{
-			"foo": "bar",
-		},
-	}
-	app.Status.Sync.ComparedTo.Source = app.Spec.GetSource()
-	app.Status.Sync.ComparedTo.Destination = app.Spec.Destination
-
-	// Ensure that hard/soft refresh isn't triggered due to reconciledAt being expired
-	reconciledAt := metav1.NewTime(time.Now().UTC().Add(15 * time.Minute))
-	app.Status.ReconciledAt = &reconciledAt
-	needRefresh, refreshType, compareWith := ctrl.needRefreshAppStatus(app, 30*time.Minute, 2*time.Hour)
-
-	assert.True(t, needRefresh)
-	assert.Equal(t, argoappv1.RefreshTypeNormal, refreshType)
-	assert.Equal(t, CompareWithLatest, compareWith)
-}
-
-func TestUnchangedManagedNamespaceMetadata(t *testing.T) {
-	ctrl := newFakeController(&fakeData{apps: []runtime.Object{}})
-	app := newFakeApp()
-	app.Spec.SyncPolicy.ManagedNamespaceMetadata = &argoappv1.ManagedNamespaceMetadata{
-		Labels: map[string]string{
-			"foo": "bar",
-		},
-		Annotations: map[string]string{
-			"foo": "bar",
-		},
-	}
-	app.Status.Sync.ComparedTo.Source = app.Spec.GetSource()
-	app.Status.Sync.ComparedTo.Destination = app.Spec.Destination
-	app.Status.OperationState.SyncResult.ManagedNamespaceMetadata = app.Spec.SyncPolicy.ManagedNamespaceMetadata
-
-	// Ensure that hard/soft refresh isn't triggered due to reconciledAt being expired
-	reconciledAt := metav1.NewTime(time.Now().UTC().Add(15 * time.Minute))
-	app.Status.ReconciledAt = &reconciledAt
-	needRefresh, refreshType, compareWith := ctrl.needRefreshAppStatus(app, 30*time.Minute, 2*time.Hour)
-
-	assert.False(t, needRefresh)
-	assert.Equal(t, argoappv1.RefreshTypeNormal, refreshType)
-	assert.Equal(t, CompareWithLatest, compareWith)
 }
 
 func TestRefreshAppConditions(t *testing.T) {
