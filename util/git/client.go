@@ -307,7 +307,7 @@ func (m *nativeGitClient) Init() error {
 		return err
 	}
 	log.Infof("Initializing %s to %s", m.repoURL, m.root)
-	err = os.RemoveAll(m.root)
+	_, err = executil.Run(exec.Command("rm", "-rf", m.root))
 	if err != nil {
 		return fmt.Errorf("unable to clean repo at %s: %v", m.root, err)
 	}
@@ -334,9 +334,9 @@ func (m *nativeGitClient) IsLFSEnabled() bool {
 func (m *nativeGitClient) fetch(revision string) error {
 	var err error
 	if revision != "" {
-		err = m.runCredentialedCmd("fetch", "origin", revision, "--tags", "--force", "--prune")
+		err = m.runCredentialedCmd("git", "fetch", "origin", revision, "--tags", "--force", "--prune")
 	} else {
-		err = m.runCredentialedCmd("fetch", "origin", "--tags", "--force", "--prune")
+		err = m.runCredentialedCmd("git", "fetch", "origin", "--tags", "--force", "--prune")
 	}
 	return err
 }
@@ -354,7 +354,7 @@ func (m *nativeGitClient) Fetch(revision string) error {
 	if err == nil && m.IsLFSEnabled() {
 		largeFiles, err := m.LsLargeFiles()
 		if err == nil && len(largeFiles) > 0 {
-			err = m.runCredentialedCmd("lfs", "fetch", "--all")
+			err = m.runCredentialedCmd("git", "lfs", "fetch", "--all")
 			if err != nil {
 				return err
 			}
@@ -387,10 +387,10 @@ func (m *nativeGitClient) LsLargeFiles() ([]string, error) {
 
 // Submodule embed other repositories into this repository
 func (m *nativeGitClient) Submodule() error {
-	if err := m.runCredentialedCmd("submodule", "sync", "--recursive"); err != nil {
+	if err := m.runCredentialedCmd("git", "submodule", "sync", "--recursive"); err != nil {
 		return err
 	}
-	if err := m.runCredentialedCmd("submodule", "update", "--init", "--recursive"); err != nil {
+	if err := m.runCredentialedCmd("git", "submodule", "update", "--init", "--recursive"); err != nil {
 		return err
 	}
 	return nil
@@ -424,12 +424,7 @@ func (m *nativeGitClient) Checkout(revision string, submoduleEnabled bool) error
 			}
 		}
 	}
-	// NOTE
-	// The double “f” in the arguments is not a typo: the first “f” tells
-	// `git clean` to delete untracked files and directories, and the second “f”
-	// tells it to clean untractked nested Git repositories (for example a
-	// submodule which has since been removed).
-	if _, err := m.runCmd("clean", "-ffdx"); err != nil {
+	if _, err := m.runCmd("clean", "-fdx"); err != nil {
 		return err
 	}
 	return nil
@@ -637,7 +632,7 @@ func (m *nativeGitClient) runCmd(args ...string) (string, error) {
 
 // runCredentialedCmd is a convenience function to run a git command with username/password credentials
 // nolint:unparam
-func (m *nativeGitClient) runCredentialedCmd(args ...string) error {
+func (m *nativeGitClient) runCredentialedCmd(command string, args ...string) error {
 	closer, environ, err := m.creds.Environ()
 	if err != nil {
 		return err
@@ -652,7 +647,7 @@ func (m *nativeGitClient) runCredentialedCmd(args ...string) error {
 		}
 	}
 
-	cmd := exec.Command("git", args...)
+	cmd := exec.Command(command, args...)
 	cmd.Env = append(cmd.Env, environ...)
 	_, err = m.runCmdOutput(cmd)
 	return err
@@ -667,8 +662,6 @@ func (m *nativeGitClient) runCmdOutput(cmd *exec.Cmd) (string, error) {
 	cmd.Env = append(cmd.Env, "HOME=/dev/null")
 	// Skip LFS for most Git operations except when explicitly requested
 	cmd.Env = append(cmd.Env, "GIT_LFS_SKIP_SMUDGE=1")
-	// Disable Git terminal prompts in case we're running with a tty
-	cmd.Env = append(cmd.Env, "GIT_TERMINAL_PROMPT=false")
 
 	// For HTTPS repositories, we need to consider insecure repositories as well
 	// as custom CA bundles from the cert database.
