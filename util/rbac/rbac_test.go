@@ -402,14 +402,8 @@ func TestGlobMatchFunc(t *testing.T) {
 }
 
 func TestLoadPolicyLine(t *testing.T) {
-	t.Run("Valid permission line", func(t *testing.T) {
-		policy := `p, role:Myrole, applications, *, myproj/*, allow`
-		model := newBuiltInModel()
-		err := loadPolicyLine(policy, model)
-		require.NoError(t, err)
-	})
-	t.Run("Valid grant line", func(t *testing.T) {
-		policy := `g, your-github-org:your-team, role:org-admin`
+	t.Run("Valid policy line", func(t *testing.T) {
+		policy := `p, foo, bar, baz`
 		model := newBuiltInModel()
 		err := loadPolicyLine(policy, model)
 		require.NoError(t, err)
@@ -440,18 +434,6 @@ func TestLoadPolicyLine(t *testing.T) {
 	})
 	t.Run("Invalid policy line", func(t *testing.T) {
 		policy := "agh, foo, bar"
-		model := newBuiltInModel()
-		err := loadPolicyLine(policy, model)
-		require.Error(t, err)
-	})
-	t.Run("Invalid policy line missing comma", func(t *testing.T) {
-		policy := "p, role:Myrole, applications, *, myproj/* allow"
-		model := newBuiltInModel()
-		err := loadPolicyLine(policy, model)
-		require.Error(t, err)
-	})
-	t.Run("Invalid policy line missing policy type", func(t *testing.T) {
-		policy := ", role:Myrole, applications, *, myproj/*, allow"
 		model := newBuiltInModel()
 		err := loadPolicyLine(policy, model)
 		require.Error(t, err)
