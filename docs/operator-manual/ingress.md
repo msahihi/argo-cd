@@ -189,7 +189,7 @@ metadata:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 spec:
-  ingressClassName: nginx
+  ingressClassName: "nginx"
   rules:
   - host: argocd.example.com
     http:
@@ -218,13 +218,14 @@ metadata:
   namespace: argocd
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     # If you encounter a redirect loop or are getting a 307 response code
     # then you need to force the nginx ingress to connect to the backend using HTTPS.
     #
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
-  ingressClassName: nginx
+  ingressClassName: "nginx"
   rules:
   - host: argocd.example.com
     http:
@@ -239,7 +240,7 @@ spec:
   tls:
   - hosts:
     - argocd.example.com
-    secretName: argocd-server-tls # as expected by argocd-server
+    secretName: argocd-secret # do not change, this is provided by Argo CD
 ```
 
 ### Option 2: Multiple Ingress Objects And Hosts
@@ -258,7 +259,7 @@ metadata:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
-  ingressClassName: nginx
+  ingressClassName: "nginx"
   rules:
   - http:
       paths:
@@ -273,7 +274,7 @@ spec:
   tls:
   - hosts:
     - argocd.example.com
-    secretName: argocd-server-tls # do not change, this is provided by Argo CD
+    secretName: argocd-secret # do not change, this is provided by Argo CD
 ```
 
 gRPC Ingress:
@@ -286,7 +287,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
 spec:
-  ingressClassName: nginx
+  ingressClassName: "nginx"
   rules:
   - http:
       paths:
@@ -301,7 +302,7 @@ spec:
   tls:
   - hosts:
     - grpc.argocd.example.com
-    secretName: argocd-server-tls # do not change, this is provided by Argo CD
+    secretName: argocd-secret # do not change, this is provided by Argo CD
 ```
 
 The API server should then be run with TLS disabled. Edit the `argocd-server` deployment to add the

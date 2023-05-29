@@ -1575,10 +1575,6 @@ spec:
                           - metadata
                           - spec
                           type: object
-                        values:
-                          additionalProperties:
-                            type: string
-                          type: object
                       required:
                       - repoURL
                       - revision
@@ -3623,10 +3619,6 @@ spec:
                                     - metadata
                                     - spec
                                     type: object
-                                  values:
-                                    additionalProperties:
-                                      type: string
-                                    type: object
                                 required:
                                 - repoURL
                                 - revision
@@ -4164,8 +4156,6 @@ spec:
                                     items:
                                       properties:
                                         branchMatch:
-                                          type: string
-                                        targetBranchMatch:
                                           type: string
                                       type: object
                                     type: array
@@ -4734,26 +4724,6 @@ spec:
                                 type: object
                               scmProvider:
                                 properties:
-                                  awsCodeCommit:
-                                    properties:
-                                      allBranches:
-                                        type: boolean
-                                      region:
-                                        type: string
-                                      role:
-                                        type: string
-                                      tagFilters:
-                                        items:
-                                          properties:
-                                            key:
-                                              type: string
-                                            value:
-                                              type: string
-                                          required:
-                                          - key
-                                          type: object
-                                        type: array
-                                    type: object
                                   azureDevOps:
                                     properties:
                                       accessTokenRef:
@@ -5406,10 +5376,6 @@ spec:
                                     required:
                                     - metadata
                                     - spec
-                                    type: object
-                                  values:
-                                    additionalProperties:
-                                      type: string
                                     type: object
                                 type: object
                               selector:
@@ -7469,10 +7435,6 @@ spec:
                                     - metadata
                                     - spec
                                     type: object
-                                  values:
-                                    additionalProperties:
-                                      type: string
-                                    type: object
                                 required:
                                 - repoURL
                                 - revision
@@ -8010,8 +7972,6 @@ spec:
                                     items:
                                       properties:
                                         branchMatch:
-                                          type: string
-                                        targetBranchMatch:
                                           type: string
                                       type: object
                                     type: array
@@ -8580,26 +8540,6 @@ spec:
                                 type: object
                               scmProvider:
                                 properties:
-                                  awsCodeCommit:
-                                    properties:
-                                      allBranches:
-                                        type: boolean
-                                      region:
-                                        type: string
-                                      role:
-                                        type: string
-                                      tagFilters:
-                                        items:
-                                          properties:
-                                            key:
-                                              type: string
-                                            value:
-                                              type: string
-                                          required:
-                                          - key
-                                          type: object
-                                        type: array
-                                    type: object
                                   azureDevOps:
                                     properties:
                                       accessTokenRef:
@@ -9253,10 +9193,6 @@ spec:
                                     - metadata
                                     - spec
                                     type: object
-                                  values:
-                                    additionalProperties:
-                                      type: string
-                                    type: object
                                 type: object
                               selector:
                                 properties:
@@ -9809,8 +9745,6 @@ spec:
                           items:
                             properties:
                               branchMatch:
-                                type: string
-                              targetBranchMatch:
                                 type: string
                             type: object
                           type: array
@@ -10379,26 +10313,6 @@ spec:
                       type: object
                     scmProvider:
                       properties:
-                        awsCodeCommit:
-                          properties:
-                            allBranches:
-                              type: boolean
-                            region:
-                              type: string
-                            role:
-                              type: string
-                            tagFilters:
-                              items:
-                                properties:
-                                  key:
-                                    type: string
-                                  value:
-                                    type: string
-                                required:
-                                - key
-                                type: object
-                              type: array
-                          type: object
                         azureDevOps:
                           properties:
                             accessTokenRef:
@@ -11051,10 +10965,6 @@ spec:
                           required:
                           - metadata
                           - spec
-                          type: object
-                        values:
-                          additionalProperties:
-                            type: string
                           type: object
                       type: object
                     selector:
